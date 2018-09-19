@@ -14,7 +14,7 @@ var config = {
 
 function createShadowName (originalAttrValue) {
 	return originalAttrValue.replace(
-		config.controllerAs + '.', config.controllerAs + '.' + config.shadowPrefix
+		`${config.controllerAs}.`, `${config.controllerAs}.${config.shadowPrefix}`
 	);
 };
 
@@ -22,19 +22,23 @@ function getOriginalName (shadowAttrValue) {
 	return shadowAttrValue.replace(config.shadowPrefix, '');
 };
 
-function getVarName (attrValue) {
-	return attrValue.replace(config.controllerAs + '.', '');
+function removeControllerAs (attrValue) {
+	return attrValue.replace(`${config.controllerAs}.`, '');
 };
 
 function isReferenceAttribute (scope, attrValue) {
 	return attrValue && 
 		typeof attrValue === 'string' && 
-		typeof scope[config.controllerAs][getVarName(attrValue)] === 'object';
+		typeof scope[config.controllerAs][removeControllerAs(attrValue)] === 'object';
 	
 };
 
 function isShadowAttribute (attrValue) {
 	return attrValue && typeof attrValue === 'string' && attrValue.indexOf(config.shadowPrefix) > -1;
+};
+
+function checkObjectsMatch(obj1, obj2) {
+	return JSON.stringify(obj1) === JSON.stringify(obj2)
 };
 
 // ----------------------------------------------------------------------------------------------
@@ -74,8 +78,8 @@ app.directive('forceOneWayBinding', function ($compile) {
 					if (isShadowAttribute(value)) {
 						
 						var originalName = getOriginalName(value),
-							originalVar = originalName.replace(config.controllerAs + '.', ''),
-							shadowVar = config.shadowPrefix + originalVar;
+							originalVar = removeControllerAs(originalName),
+							shadowVar = removeControllerAs(value);
 
 						// whenever the original parent scope variable changes, update the shadow variable
 						scope.$watch(originalName, function () {
@@ -85,11 +89,8 @@ app.directive('forceOneWayBinding', function ($compile) {
 						// it the shadow variable changes and does not match the original, it must have 
 						// been modified in the component --> show a console warning to the user
 						scope.$watch(value, function () {
-							if (JSON.stringify(scope.$ctrl[shadowVar]) !== JSON.stringify(scope.$ctrl[originalVar]))
-								console.warn(
-							`You are modifying the property myVar directly - changes may be overwritten by the parent.
-							Please create a local copy of this property to modfy inside the component.`
-							)
+							if (!checkObjectsMatch(scope.$ctrl[shadowVar], scope.$ctrl[originalVar]))
+								console.warn(`You are modifying the attribute '${originalVar}' directly - changes may be overwritten by the parent. Please create a local copy of this attribute to modfy inside the component.`)
 						}, true)
 
 					}

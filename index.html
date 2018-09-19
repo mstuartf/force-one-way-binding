@@ -1,20 +1,22 @@
 <html>
+
+	<meta charset="UTF-8">
+	
 	<head>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.11/angular.min.js"></script>
 		<script type="text/javascript" src="app.js"></script>
 		<script type="text/javascript" src="simpleComponent.js"></script>
 		<script type="text/javascript" src="forceOneWayBinding.js"></script>
-		
 	</head>
 
 	<body>
 		<div ng-app="app" 
 		     ng-controller="MainCtrl as $ctrl">
 			<h1>
-				Parent var: {{$ctrl.myVar}}
+				parent.myVar = {{$ctrl.myVar}}
 			</h1>
 			<button ng-click="$ctrl.myVar.a = $ctrl.myVar.a + 1">
-				Modify parent var
+				Modify
 			</button>
 			<simple-component  
 				force-one-way-binding 
